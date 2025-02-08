@@ -1,6 +1,5 @@
 package com.umar.chat.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -24,7 +23,7 @@ fun ChatScreen() {
     val chatRepository = remember { ChatRepository(apiService = chatApiService) }
     val chatViewModel: ChatViewModel = viewModel { ChatViewModel(chatRepository) }
     val chatUiState by chatViewModel.chatUiState.collectAsState()
-    val chatEventMap by chatViewModel.chatEventsMap.collectAsState()
+    val chatEventMap by chatViewModel.chatEventMap.collectAsState()
 
     val navigationActions: NavigationActions = LocalNavigationActions.current
 
@@ -40,9 +39,6 @@ fun ChatScreen() {
         navigationActions.navigateToMessaging(jid)
     }
 
-    Log.d("ChatScreen", "render")
-    Log.d("ChatScreen", chatUiState.toString())
-
     Scaffold { innerPadding ->
         Box(
             modifier = Modifier.padding(innerPadding),
@@ -50,7 +46,7 @@ fun ChatScreen() {
         ) {
             ChatList(
                 chats = chatUiState.chatResponse?.data ?: emptyList(),
-                isRefreshing = false,
+                isRefreshing = chatUiState.isLoading,
                 onRefresh = ::handleRefresh,
                 onNavigate = ::handleNavigate,
                 chatEventMap

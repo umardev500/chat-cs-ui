@@ -9,8 +9,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.umar.chat.data.model.ChatData
-import com.umar.chat.data.model.ChatEvent
-import com.umar.chat.data.model.StatusEvent
+import com.umar.chat.data.model.ChatEventData
 import com.umar.chat.ui.components.molecules.ChatItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -20,27 +19,25 @@ fun ChatList(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onNavigate: (jid: String) -> Unit,
-    chatEventMap: Map<String, ChatEvent>
+    chatEventMap: Map<String, List<ChatEventData>>
 ) {
-
-    Log.d("ChatScreen", chatEventMap.toString())
-
-    val updateChats = chats.map { chat ->
-        val matching = chatEventMap.values.find { ev ->
-            when (ev) {
-                is StatusEvent -> ev.data.remotejid == chat.remotejid
+    val updatedChats = chats.map { chatData ->
+        val matching = chatEventMap.values.flatten().find { chatEventData ->
+            when (chatEventData) {
+                is ChatEventData.Status -> chatEventData.remotejid == chatData.remotejid
                 else -> false
             }
         }
 
         when (matching) {
-            is StatusEvent -> chat.copy(
-                isOnline = matching.data.status == "online"
+            is ChatEventData.Status -> chatData.copy(
+                isOnline = matching.status == "online"
             )
-            else -> chat
-        }
-    }
 
+            else -> chatData
+        }
+
+    }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -49,7 +46,7 @@ fun ChatList(
             .fillMaxSize()
     ) {
         LazyColumn {
-            items(updateChats, key = { chat -> chat.remotejid + chat.csid }) { chat ->
+            items(updatedChats, key = { chat -> chat.remotejid + chat.csid }) { chat ->
                 ChatItem(chat, navigate = onNavigate)
             }
         }

@@ -12,7 +12,7 @@ sealed class ChatEvent {
 @SerialName("message")
 data class MessageEvent(
     override val type: String,
-    val data: MessageData
+    val data: List<MessageData>
 ) : ChatEvent()
 
 @Serializable
@@ -24,7 +24,7 @@ data class MessageData(
 @SerialName("status")
 data class StatusEvent(
     override val type: String,
-    val data: StatusData
+    val data: List<StatusData>
 ) : ChatEvent()
 
 @Serializable

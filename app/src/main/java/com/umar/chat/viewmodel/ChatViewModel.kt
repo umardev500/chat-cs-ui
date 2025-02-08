@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.umar.chat.data.model.ChatEvent
+import com.umar.chat.data.model.ChatEventData
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.model.MessageEvent
 import com.umar.chat.data.model.StatusEvent
 import com.umar.chat.repository.ChatRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.DeserializationStrategy
@@ -39,8 +41,8 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
     private val _chatUiState = MutableStateFlow(ChatUiState())
     val chatUiState: StateFlow<ChatUiState> = _chatUiState
 
-    private val _chatEventsMap = MutableStateFlow<Map<String, ChatEvent>>(emptyMap())
-    val chatEventsMap: StateFlow<Map<String, ChatEvent>> = _chatEventsMap
+    private val _chatEventMap = MutableStateFlow<Map<String, List<ChatEventData>>>(emptyMap())
+    val chatEventMap: StateFlow<Map<String, List<ChatEventData>>> = _chatEventMap
 
     init {
         fetchChat()
@@ -50,6 +52,7 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
     fun listenToChatEvents() {
         viewModelScope.launch {
             chatRepository.listenToChatEvents()
+                .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
                 .collect { ev ->
                     val parsedEvent = try {
                         Json.decodeFromString(ChatEventSerializer, ev)
@@ -58,12 +61,42 @@ class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
                         null
                     }
 
-                    parsedEvent?.let {
-                        _chatEventsMap.value = _chatEventsMap.value.toMutableMap().apply {
-                            Log.d("ChatScreen", "put")
-                            put(it.type, it)
+                    parsedEvent?.let { event ->
+                        val eventType = event.type
+                        _chatEventMap.update { curState ->
+                            val updatedState = curState.toMutableMap()
+
+                            if (event is StatusEvent) {
+                                val statusList =
+                                    updatedState[eventType]?.filterIsInstance<ChatEventData.Status>()
+                                        ?: emptyList()
+                                val updatedStatusList = statusList.toMutableList()
+
+                                for (newStatus in event.data) {
+                                    val index =
+                                        updatedStatusList.indexOfFirst { it.remotejid == newStatus.remotejid }
+                                    if (index != -1) {
+                                        // Update existing status
+                                        updatedStatusList[index] =
+                                            updatedStatusList[index].copy(status = newStatus.status)
+                                    } else {
+                                        // Append new status
+                                        updatedStatusList.add(
+                                            ChatEventData.Status(
+                                                status = newStatus.status,
+                                                remotejid = newStatus.remotejid
+                                            )
+                                        )
+                                    }
+                                }
+
+                                updatedState[eventType] = updatedStatusList
+                            }
+
+                            updatedState
                         }
                     }
+
                 }
         }
     }

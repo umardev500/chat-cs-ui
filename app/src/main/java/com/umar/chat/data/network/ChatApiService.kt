@@ -1,6 +1,5 @@
 package com.umar.chat.data.network
 
-import android.util.Log
 import com.umar.chat.data.model.ChatResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -17,7 +16,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 
 class ChatApiService {
-    private val host = "192.168.207.44"
+    private val host = "192.168.205.44"
     private val port = 8001
     private val baseUrl = "http://$host:$port/api"
 
@@ -51,7 +50,8 @@ class ChatApiService {
                 }
             }
         } catch (e: Exception) {
-            emit("Error: ${e.localizedMessage}")
+            throw e
+
         }
     }
 
