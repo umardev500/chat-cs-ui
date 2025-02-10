@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.umar.chat.data.model.ChatData
 import com.umar.chat.data.model.Status
+import com.umar.chat.data.model.StatusType
 import com.umar.chat.ui.components.molecules.ChatItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,7 +26,11 @@ fun ChatList(
     onNavigate: (jid: String) -> Unit,
     statusUpdate: List<Status>
 ) {
-    Log.d("ChatLog", "Status update: $statusUpdate")
+    // Merge `statusUpdate` into `chats`
+    val updatedChats = chats.map { chat ->
+        val isOnline = statusUpdate.any { it.remotejid == chat.remotejid && it.status == StatusType.Online.value }
+        chat.copy(isOnline = isOnline)
+    }
 
     PullToRefreshBox(
         isRefreshing = isRefreshing,
@@ -43,7 +48,7 @@ fun ChatList(
                 }
             }
 
-            items(chats, key = { chat -> chat.remotejid + chat.csid }) { chat ->
+            items(updatedChats, key = { chat -> chat.remotejid + chat.csid }) { chat ->
                 ChatItem(chat, navigate = onNavigate)
             }
         }

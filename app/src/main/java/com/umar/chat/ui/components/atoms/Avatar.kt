@@ -1,5 +1,6 @@
 package com.umar.chat.ui.components.atoms
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.umar.chat.ui.theme.Green600
 
 @Composable
-fun Avatar(modifier: Modifier = Modifier, painter: Painter, isOnline: Boolean = true) {
+fun Avatar(modifier: Modifier = Modifier, painter: Painter, isOnline: Boolean = false) {
     Box(
         modifier = modifier
             .size(50.dp)
