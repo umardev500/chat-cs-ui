@@ -29,13 +29,13 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
     // Function to refresh chat data
     fun handleRefresh() {
         chatViewModel.fetchChat()
+        chatViewModel.listentToWebsocketEvents()
     }
 
     // Function to handle navigation to messaging screen
     fun handleNavigate(jid: String) {
         navigationActions.navigateToMessaging(jid)
     }
-
 
     Scaffold { innerPadding ->
         Box(

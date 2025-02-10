@@ -11,6 +11,7 @@ import com.umar.chat.repository.ChatRepository
 import com.umar.chat.repository.WebsocketRepository
 import com.umar.chat.utils.WsEventUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -20,7 +21,7 @@ import javax.inject.Inject
 
 data class ChatUiState(
     val chatResponse: ChatResponse? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
 )
 
 @HiltViewModel
@@ -39,7 +40,7 @@ class ChatViewModel @Inject constructor(
         listentToWebsocketEvents()
     }
 
-    private fun listentToWebsocketEvents() {
+    fun listentToWebsocketEvents() {
         viewModelScope.launch {
             websocketRepository.listenWebsocketEvents()
                 .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
@@ -60,6 +61,7 @@ class ChatViewModel @Inject constructor(
     fun fetchChat() {
         viewModelScope.launch {
             _chatUiState.update { it.copy(isLoading = true) }
+            delay(100)
 
             try {
                 val response = chatRepository.getChats()
