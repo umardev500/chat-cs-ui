@@ -37,12 +37,3 @@ data class MessageMetadata(
     val fromme: Boolean,
     val id: String
 )
-
-@Serializable
-sealed class ChatEventData {
-    @Serializable
-    data class Status(val status: String, val remotejid: String) : ChatEventData()
-
-    @Serializable
-    data class Message(val text: String) : ChatEventData()
-}
