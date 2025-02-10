@@ -1,7 +1,6 @@
 package com.umar.chat.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,8 +24,8 @@ fun MainNavGraph() {
         )
     }
 
-    CompositionLocalProvider(
-        LocalNavigationActions provides navigationActions
+    NavigationLocalComp.Provide(
+        navigationActions = navigationActions
     ) {
         NavHost(
             navController = navController,

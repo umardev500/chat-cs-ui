@@ -6,13 +6,9 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.sse.SSE
-import io.ktor.client.plugins.sse.sse
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 
 class ChatApiService {
@@ -33,25 +29,6 @@ class ChatApiService {
             requestTimeoutMillis = 10_000
             connectTimeoutMillis = 10_000
             socketTimeoutMillis = 10_000
-        }
-        install(SSE)
-    }
-
-    fun listenToChatEvents(): Flow<String> = flow {
-        try {
-            client.sse(
-                scheme = "http",
-                host = host,
-                port = port,
-                path = "/api/chat/sse/980"
-            ) {
-                incoming.collect { ev ->
-                    ev.data?.let { emit(it) }
-                }
-            }
-        } catch (e: Exception) {
-            throw e
-
         }
     }
 

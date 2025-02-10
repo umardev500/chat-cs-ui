@@ -2,7 +2,6 @@ package com.umar.chat.repository
 
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.network.ChatApiService
-import kotlinx.coroutines.flow.Flow
 
 class ChatRepository(private val apiService: ChatApiService) {
 
@@ -10,6 +9,4 @@ class ChatRepository(private val apiService: ChatApiService) {
     suspend fun getChats(): ChatResponse {
         return apiService.fetchChats()
     }
-
-    fun listenToChatEvents(): Flow<String> = apiService.listenToChatEvents()
 }

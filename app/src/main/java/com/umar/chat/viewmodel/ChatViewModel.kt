@@ -3,104 +3,60 @@ package com.umar.chat.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.umar.chat.data.model.ChatEvent
-import com.umar.chat.data.model.ChatEventData
 import com.umar.chat.data.model.ChatResponse
-import com.umar.chat.data.model.MessageEvent
-import com.umar.chat.data.model.StatusEvent
+import com.umar.chat.data.model.MessageType
+import com.umar.chat.data.model.Status
+import com.umar.chat.data.model.WsEvent
 import com.umar.chat.repository.ChatRepository
+import com.umar.chat.repository.WebsocketRepository
+import com.umar.chat.utils.WsEventUtils
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.serialization.DeserializationStrategy
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonContentPolymorphicSerializer
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import javax.inject.Inject
 
 data class ChatUiState(
     val chatResponse: ChatResponse? = null,
     val isLoading: Boolean = false
 )
 
-object ChatEventSerializer : JsonContentPolymorphicSerializer<ChatEvent>(ChatEvent::class) {
-    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<ChatEvent> {
-        return when (val type = element.jsonObject["type"]?.jsonPrimitive?.content) {
-            "message" -> MessageEvent.serializer()
-            "status" -> StatusEvent.serializer()
-            else -> throw SerializationException("Unknown type: $type")
-        }
-    }
-}
-
-class ChatViewModel(private val chatRepository: ChatRepository) : ViewModel() {
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val chatRepository: ChatRepository,
+    private val websocketRepository: WebsocketRepository
+) : ViewModel() {
     private val _chatUiState = MutableStateFlow(ChatUiState())
     val chatUiState: StateFlow<ChatUiState> = _chatUiState
 
-    private val _chatEventMap = MutableStateFlow<Map<String, List<ChatEventData>>>(emptyMap())
-    val chatEventMap: StateFlow<Map<String, List<ChatEventData>>> = _chatEventMap
+    private val _statusUpdate = MutableStateFlow<List<Status>>(emptyList())
+    val statusUpdate: StateFlow<List<Status>> = _statusUpdate
 
     init {
         fetchChat()
-        listenToChatEvents()
+        listentToWebsocketEvents()
     }
 
-    fun listenToChatEvents() {
+    private fun listentToWebsocketEvents() {
         viewModelScope.launch {
-            chatRepository.listenToChatEvents()
+            websocketRepository.listenWebsocketEvents()
                 .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
                 .collect { ev ->
-                    val parsedEvent = try {
-                        Json.decodeFromString(ChatEventSerializer, ev)
-                    } catch (e: Exception) {
-                        Log.d("ChatScreen", "${e.message}")
-                        null
-                    }
-
-                    parsedEvent?.let { event ->
-                        val eventType = event.type
-                        _chatEventMap.update { curState ->
-                            val updatedState = curState.toMutableMap()
-
-                            if (event is StatusEvent) {
-                                val statusList =
-                                    updatedState[eventType]?.filterIsInstance<ChatEventData.Status>()
-                                        ?: emptyList()
-                                val updatedStatusList = statusList.toMutableList()
-
-                                for (newStatus in event.data) {
-                                    val index =
-                                        updatedStatusList.indexOfFirst { it.remotejid == newStatus.remotejid }
-                                    if (index != -1) {
-                                        // Update existing status
-                                        updatedStatusList[index] =
-                                            updatedStatusList[index].copy(status = newStatus.status)
-                                    } else {
-                                        // Append new status
-                                        updatedStatusList.add(
-                                            ChatEventData.Status(
-                                                status = newStatus.status,
-                                                remotejid = newStatus.remotejid
-                                            )
-                                        )
-                                    }
-                                }
-
-                                updatedState[eventType] = updatedStatusList
-                            }
-
-                            updatedState
+                    val rawResponse = WsEventUtils.parseRawWsResponse(ev)
+                    val data: List<WsEvent> = WsEventUtils.parseWsEvents(rawResponse)
+                    when (rawResponse.mt) {
+                        MessageType.Status.mt -> {
+                            val statuses = data.filterIsInstance<Status>()
+                            _statusUpdate.update { statuses }
                         }
                     }
-
                 }
         }
     }
 
+    // fetchChat is function to fetch chat data
     fun fetchChat() {
         viewModelScope.launch {
             _chatUiState.update { it.copy(isLoading = true) }
