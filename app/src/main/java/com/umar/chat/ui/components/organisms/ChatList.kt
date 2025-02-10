@@ -13,8 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.umar.chat.data.model.ChatData
+import com.umar.chat.data.model.PresenseType
 import com.umar.chat.data.model.Status
 import com.umar.chat.data.model.StatusType
+import com.umar.chat.data.model.Typing
 import com.umar.chat.ui.components.molecules.ChatItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -24,12 +26,18 @@ fun ChatList(
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     onNavigate: (jid: String) -> Unit,
-    statusUpdate: List<Status>
+    statusUpdate: List<Status>,
+    typingUpdate: List<Typing>
 ) {
     // Merge `statusUpdate` into `chats`
-    val updatedChats = chats.map { chat ->
+    var updatedChats = chats.map { chat ->
         val isOnline = statusUpdate.any { it.remotejid == chat.remotejid && it.status == StatusType.Online.value }
         chat.copy(isOnline = isOnline)
+    }
+
+    updatedChats = updatedChats.map { chat ->
+        val isTyping = typingUpdate.any { it.remotejid == chat.remotejid && it.presence == PresenseType.Composing.value }
+        chat.copy(isTyping = isTyping)
     }
 
     PullToRefreshBox(

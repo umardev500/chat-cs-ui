@@ -21,6 +21,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
     val chatUiState by chatViewModel.chatUiState.collectAsState()
 
     val statusUpdate by chatViewModel.statusUpdate.collectAsState()
+    val typingUpdate by chatViewModel.typingUpdate.collectAsState()
 
     // Function to refresh chat data
     fun handleRefresh() {
@@ -43,7 +44,8 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
                 isRefreshing = chatUiState.isLoading,
                 onRefresh = ::handleRefresh,
                 onNavigate = ::handleNavigate,
-                statusUpdate = statusUpdate
+                statusUpdate = statusUpdate,
+                typingUpdate = typingUpdate
             )
         }
     }

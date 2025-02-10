@@ -40,7 +40,7 @@ fun ChatItem(chat: ChatData, navigate: (jid: String) -> Unit) {
             )
 
             // Bottom
-            ChatMessageDetails(lastMessage = chat.lastMessage!!, count = chat.unreadCount)
+            ChatMessageDetails(lastMessage = chat.lastMessage!!, count = chat.unreadCount, isTyping = chat.isTyping)
         }
 
     }

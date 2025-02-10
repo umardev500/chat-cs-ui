@@ -4,6 +4,7 @@ import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.MessageType
 import com.umar.chat.data.model.RawWsResponse
 import com.umar.chat.data.model.Status
+import com.umar.chat.data.model.Typing
 import com.umar.chat.data.model.WsEvent
 import com.umar.chat.data.model.wsModule
 import kotlinx.serialization.SerializationException
@@ -34,6 +35,13 @@ class WsEventUtils private constructor() {
                 MessageType.Message.mt -> rawWsResponse.data.map {
                     json.decodeFromJsonElement(
                         Message.serializer(),
+                        it
+                    )
+                }
+
+                MessageType.Typing.mt -> rawWsResponse.data.map {
+                    json.decodeFromJsonElement(
+                        Typing.serializer(),
                         it
                     )
                 }

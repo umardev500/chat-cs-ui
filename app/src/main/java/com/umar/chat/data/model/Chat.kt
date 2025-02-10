@@ -18,7 +18,8 @@ data class ChatData(
     val lastMessage: LastMessage?,
     val remotejid: String,
     val csid: String,
-    val isOnline: Boolean = false
+    val isOnline: Boolean = false,
+    val isTyping: Boolean = false
 )
 
 // Last message details

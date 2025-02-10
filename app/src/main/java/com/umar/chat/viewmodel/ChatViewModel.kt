@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.model.MessageType
 import com.umar.chat.data.model.Status
+import com.umar.chat.data.model.Typing
 import com.umar.chat.data.model.WsEvent
 import com.umar.chat.repository.ChatRepository
 import com.umar.chat.repository.WebsocketRepository
@@ -35,6 +36,9 @@ class ChatViewModel @Inject constructor(
     private val _statusUpdate = MutableStateFlow<List<Status>>(emptyList())
     val statusUpdate: StateFlow<List<Status>> = _statusUpdate
 
+    private val _typingUpdate = MutableStateFlow<List<Typing>>(emptyList())
+    val typingUpdate: StateFlow<List<Typing>> = _typingUpdate
+
     init {
         fetchChat()
         listentToWebsocketEvents()
@@ -51,6 +55,11 @@ class ChatViewModel @Inject constructor(
                         MessageType.Status.mt -> {
                             val statuses = data.filterIsInstance<Status>()
                             _statusUpdate.update { statuses }
+                        }
+
+                        MessageType.Typing.mt -> {
+                            val typings = data.filterIsInstance<Typing>()
+                            _typingUpdate.update { typings }
                         }
                     }
                 }
