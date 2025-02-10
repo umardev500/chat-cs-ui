@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 
 class WebsocketService {
     private val _host = "192.168.205.44"
-    private val _port = 8001
+    private val _port = 8000
 
     private val _client = HttpClient(CIO) {
         install(WebSockets)

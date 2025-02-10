@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 
 class ChatApiService {
     private val host = "192.168.205.44"
-    private val port = 8001
+    private val port = 8000
     private val baseUrl = "http://$host:$port/api"
 
     private val client = HttpClient(Android) {
