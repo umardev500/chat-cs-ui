@@ -148,7 +148,7 @@ class ChatViewModel @Inject constructor(
             }
 
             // ✅ Update unread count in database (optional)
-            // chatRepository.updateUnreadCount(remoteJid, csId)
+            csId?.let { chatRepository.updateUnreadCount(remoteJid, it) }
         }
     }
 

@@ -1,6 +1,7 @@
 package com.umar.chat.data.network
 
 import com.umar.chat.data.model.ChatResponse
+import com.umar.chat.data.model.CommonModel
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.android.Android
@@ -8,6 +9,7 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
@@ -39,6 +41,17 @@ class ChatApiService {
             response.body<ChatResponse>() // Deserialize response body to ChatResponse
         } catch (e: Exception) {
             // Hanlde any exceptions
+            throw RuntimeException("Failed to fetch chats: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun updateUnreadCount(jid: String, csid: String): CommonModel {
+        val url = "$baseUrl/chat/update-unread-count?jid=$jid&csid=$csid"
+        return try {
+            val response: HttpResponse = client.get(url) // Send GET request
+            response.body<CommonModel>()
+
+        } catch (e: Exception) {
             throw RuntimeException("Failed to fetch chats: ${e.localizedMessage}")
         }
     }
