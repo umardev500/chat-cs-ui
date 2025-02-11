@@ -4,12 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.umar.chat.data.model.ChatResponse
+import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.MessageType
 import com.umar.chat.data.model.Status
 import com.umar.chat.data.model.Typing
-import com.umar.chat.data.model.WsEvent
 import com.umar.chat.repository.ChatRepository
 import com.umar.chat.repository.WebsocketRepository
+import com.umar.chat.utils.WsEventResult
 import com.umar.chat.utils.WsEventUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -39,6 +40,9 @@ class ChatViewModel @Inject constructor(
     private val _typingUpdate = MutableStateFlow<List<Typing>>(emptyList())
     val typingUpdate: StateFlow<List<Typing>> = _typingUpdate
 
+    private val _chatUpdate = MutableStateFlow<Message?>(null)
+    val chatUpdate: StateFlow<Message?> = _chatUpdate
+
     init {
         fetchChat()
         listentToWebsocketEvents()
@@ -49,20 +53,64 @@ class ChatViewModel @Inject constructor(
             websocketRepository.listenWebsocketEvents()
                 .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
                 .collect { ev ->
-                    val rawResponse = WsEventUtils.parseRawWsResponse(ev)
-                    val data: List<WsEvent> = WsEventUtils.parseWsEvents(rawResponse)
-                    when (rawResponse.mt) {
-                        MessageType.Status.mt -> {
-                            val statuses = data.filterIsInstance<Status>()
-                            _statusUpdate.update { statuses }
+                    val rawResponse = WsEventUtils.parseRawWsResponse(ev) ?: return@collect
+
+                    val data: WsEventResult =
+                        WsEventUtils.parseWsEvents(rawResponse) ?: return@collect
+
+                    when (data) {
+                        is WsEventResult.Multiple -> {
+                            val events = data.events
+                            when (rawResponse.mt) {
+                                MessageType.Status.mt -> {
+                                    val statuses = events.filterIsInstance<Status>()
+                                    _statusUpdate.update { statuses }
+                                }
+
+                                MessageType.Typing.mt -> {
+                                    val typings = events.filterIsInstance<Typing>()
+                                    _typingUpdate.update { typings }
+                                }
+                            }
                         }
 
-                        MessageType.Typing.mt -> {
-                            val typings = data.filterIsInstance<Typing>()
-                            _typingUpdate.update { typings }
+                        is WsEventResult.Single -> {
+                            when (rawResponse.mt) {
+                                MessageType.Message.mt -> {
+                                    val message = data.event as? Message
+                                    if (message != null) {
+                                        _chatUpdate.update { message }
+                                        _typingUpdate.update { emptyList() } // reset typing state after sent
+                                        updateUnreadCount(message.textMessage.metadata.remotejid) // update unread count
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+        }
+    }
+
+    private fun updateUnreadCount(remoteJid: String) {
+        viewModelScope.launch {
+            val currentChatResponse = _chatUiState.value.chatResponse ?: return@launch
+
+            // ✅ Update unread count in chatResponse
+            val updatedChats = currentChatResponse.data.map { chat ->
+                if (chat.lastMessage?.metadata?.remotejid == remoteJid) {
+                    chat.copy(unreadCount = chat.unreadCount + 1)
+                } else {
+                    chat
+                }
+            }
+
+            // ✅ Persist changes to UI state
+            _chatUiState.update {
+                it.copy(chatResponse = currentChatResponse.copy(data = updatedChats))
+            }
+
+            // ✅ Update unread count in database (optional)
+            // chatRepository.updateUnreadCount(remoteJid)
         }
     }
 

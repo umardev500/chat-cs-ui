@@ -1,18 +1,15 @@
 package com.umar.chat.ui.components.organisms
 
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.umar.chat.data.model.ChatData
+import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.PresenseType
 import com.umar.chat.data.model.Status
 import com.umar.chat.data.model.StatusType
@@ -27,16 +24,34 @@ fun ChatList(
     onRefresh: () -> Unit,
     onNavigate: (jid: String) -> Unit,
     statusUpdate: List<Status>,
-    typingUpdate: List<Typing>
+    typingUpdate: List<Typing>,
+    chatUpdate: Message?,
 ) {
     // Merge `statusUpdate` into `chats`
     var updatedChats = chats.map { chat ->
-        val isOnline = statusUpdate.any { it.remotejid == chat.remotejid && it.status == StatusType.Online.value }
+        val isOnline =
+            statusUpdate.any { it.remotejid == chat.remotejid && it.status == StatusType.Online.value }
         chat.copy(isOnline = isOnline)
     }
 
+    // Merge `chatUpdate` into `updatedChats`
+    // this handler for incoming message
+    if (chatUpdate != null) {
+        updatedChats = updatedChats.map { chat ->
+            if (chat.remotejid == chatUpdate.textMessage.metadata.remotejid) {
+                chat.copy(
+                    lastMessage = chat.lastMessage?.copy(conversation = chatUpdate.textMessage.conversation)
+                )
+            } else {
+                chat
+            }
+        }
+    }
+
+    // Typing handler
     updatedChats = updatedChats.map { chat ->
-        val isTyping = typingUpdate.any { it.remotejid == chat.remotejid && it.presence == PresenseType.Composing.value }
+        val isTyping =
+            typingUpdate.any { it.remotejid == chat.remotejid && it.presence == PresenseType.Composing.value }
         chat.copy(isTyping = isTyping)
     }
 
@@ -49,7 +64,7 @@ fun ChatList(
         LazyColumn {
             if (chats.isEmpty()) {
                 item {
-                    Box (
+                    Box(
                         modifier = Modifier
                             .fillParentMaxSize()
                     )

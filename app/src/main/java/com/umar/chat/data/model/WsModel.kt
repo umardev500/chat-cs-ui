@@ -1,11 +1,11 @@
 package com.umar.chat.data.model
 
-import com.umar.chat.utils.WsEventUtils
+import io.ktor.util.converters.DataConversion
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -29,9 +29,24 @@ data class Status(
 @Serializable
 @SerialName("message")
 data class Message(
-    val message: String,
-    val remotejid: String
+    val isInitial: Boolean,
+    val textMessage: TextMessage,
 ) : WsEvent()
+
+@Serializable
+data class TextMessage(
+    val conversation: String,
+    val pushName : String,
+    val timestamp: Long,
+    val metadata: MetaData
+)
+
+@Serializable
+data class MetaData(
+    @SerialName("remoteJid") val remotejid: String,
+    val fromMe: Boolean = false,
+    val id: String
+)
 
 @Serializable
 @SerialName("typing")
@@ -43,7 +58,7 @@ data class Typing(
 @Serializable
 data class RawWsResponse(
     val mt: String,
-    val data: JsonArray
+    val data: JsonElement
 )
 
 @Serializable
@@ -57,33 +72,5 @@ val wsModule = SerializersModule {
         subclass(Status::class, Status.serializer())
         subclass(Message::class, Message.serializer())
         subclass(Typing::class, Typing.serializer())
-    }
-}
-
-fun main() {
-    val jsonString = """{
-        "mt": "message",
-        "data": [
-            {
-                "remotejid": "6285123456791@s.whatsapp.net",
-                "message": "online"
-            }
-        ]
-    }"""
-
-
-    val json = Json {
-        serializersModule = wsModule
-        ignoreUnknownKeys = true
-    }
-
-    val rawResponse = json.decodeFromString<RawWsResponse>(jsonString)
-    val data: List<WsEvent> = WsEventUtils.parseWsEvents(rawResponse)
-
-    val wsResponse = WsResponse(rawResponse.mt, data)
-    println(wsResponse)
-
-    if (wsResponse.mt == "status") {
-        val statuses = wsResponse.data.filterIsInstance<Status>()
     }
 }

@@ -30,7 +30,7 @@ fun ChatItem(chat: ChatData, navigate: (jid: String) -> Unit) {
         Column(
             modifier = Modifier
                 .padding(start = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(0.dp)
         ) {
             // Chat Name and Time
             ChatNameWithTime(

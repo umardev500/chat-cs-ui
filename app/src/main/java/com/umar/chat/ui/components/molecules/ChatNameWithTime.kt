@@ -23,7 +23,6 @@ fun ChatNameWithTime(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 2.dp) // To provide some space between name and message
     ) {
         // Chat Name
         Text(

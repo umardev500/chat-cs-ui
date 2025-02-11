@@ -1,5 +1,6 @@
 package com.umar.chat.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -22,6 +23,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
 
     val statusUpdate by chatViewModel.statusUpdate.collectAsState()
     val typingUpdate by chatViewModel.typingUpdate.collectAsState()
+    val chatUpdate by chatViewModel.chatUpdate.collectAsState()
 
     // Function to refresh chat data
     fun handleRefresh() {
@@ -45,7 +47,8 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
                 onRefresh = ::handleRefresh,
                 onNavigate = ::handleNavigate,
                 statusUpdate = statusUpdate,
-                typingUpdate = typingUpdate
+                typingUpdate = typingUpdate,
+                chatUpdate = chatUpdate,
             )
         }
     }
