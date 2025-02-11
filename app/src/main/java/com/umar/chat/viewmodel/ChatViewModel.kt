@@ -129,9 +129,13 @@ class ChatViewModel @Inject constructor(
         viewModelScope.launch {
             val currentChatResponse = _chatUiState.value.chatResponse ?: return@launch
 
+            // Cs id temporary variable
+            var csId: String? = null
+
             // ✅ Update unread count in chatResponse
             val updatedChats = currentChatResponse.data.map { chat ->
                 if (chat.lastMessage?.metadata?.remotejid == remoteJid) {
+                    csId = chat.csid
                     chat.copy(unreadCount = chat.unreadCount + 1)
                 } else {
                     chat
@@ -144,7 +148,7 @@ class ChatViewModel @Inject constructor(
             }
 
             // ✅ Update unread count in database (optional)
-            // chatRepository.updateUnreadCount(remoteJid)
+            // chatRepository.updateUnreadCount(remoteJid, csId)
         }
     }
 
