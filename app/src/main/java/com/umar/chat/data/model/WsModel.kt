@@ -1,10 +1,8 @@
 package com.umar.chat.data.model
 
-import io.ktor.util.converters.DataConversion
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -30,13 +28,14 @@ data class Status(
 @SerialName("message")
 data class Message(
     val isInitial: Boolean,
-    val textMessage: TextMessage,
+    @SerialName("initial_chats") val initialChats: List<ChatData>? = null,
+    val textMessage: TextMessage? = null,
 ) : WsEvent()
 
 @Serializable
 data class TextMessage(
     val conversation: String,
-    val pushName : String,
+    val pushName: String,
     val timestamp: Long,
     val metadata: MetaData
 )

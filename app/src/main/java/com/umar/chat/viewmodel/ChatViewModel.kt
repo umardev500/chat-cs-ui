@@ -3,6 +3,7 @@ package com.umar.chat.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.umar.chat.data.model.ChatData
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.MessageType
@@ -79,15 +80,48 @@ class ChatViewModel @Inject constructor(
                                 MessageType.Message.mt -> {
                                     val message = data.event as? Message
                                     if (message != null) {
-                                        _chatUpdate.update { message }
                                         _typingUpdate.update { emptyList() } // reset typing state after sent
-                                        updateUnreadCount(message.textMessage.metadata.remotejid) // update unread count
+
+                                        if (message.isInitial) {
+                                            // ✅ Initialize chats
+                                            initializeChats(message)
+
+                                            // ✅ Update unread count
+                                            message.textMessage?.metadata?.let {
+                                                updateUnreadCount(
+                                                    it.remotejid
+                                                )
+                                            }
+                                        } else {
+                                            // ✅ Update higlight message
+                                            _chatUpdate.update { message }
+
+                                            // ✅ Update unread count
+                                            message.textMessage?.metadata?.let {
+                                                updateUnreadCount(
+                                                    it.remotejid
+                                                )
+                                            } // update unread count
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+        }
+    }
+
+    private fun initializeChats(message: Message) {
+        _chatUiState.update { currentState ->
+            val currentChatResponse = currentState.chatResponse ?: message.initialChats?.let {
+                ChatResponse(
+                    success = true,
+                    message = "Initialized",
+                    data = it
+                )
+            }
+            currentState.copy(chatResponse = currentChatResponse?.copy())
         }
     }
 

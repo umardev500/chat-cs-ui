@@ -38,9 +38,9 @@ fun ChatList(
     // this handler for incoming message
     if (chatUpdate != null) {
         updatedChats = updatedChats.map { chat ->
-            if (chat.remotejid == chatUpdate.textMessage.metadata.remotejid) {
+            if (chat.remotejid == chatUpdate.textMessage?.metadata?.remotejid) {
                 chat.copy(
-                    lastMessage = chat.lastMessage?.copy(conversation = chatUpdate.textMessage.conversation)
+                    lastMessage = chatUpdate.textMessage.let { chat.lastMessage?.copy(conversation = it.conversation) }
                 )
             } else {
                 chat
