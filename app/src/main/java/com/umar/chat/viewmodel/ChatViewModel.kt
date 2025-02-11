@@ -3,7 +3,6 @@ package com.umar.chat.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.umar.chat.data.model.ChatData
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.MessageType
@@ -92,7 +91,7 @@ class ChatViewModel @Inject constructor(
 
                                         if (message.isInitial) {
                                             // ✅ Initialize chats
-                                            initializeChats(message)
+                                            appendOrInitializeChats(message)
 
                                             // ✅ Update unread count
                                             message.textMessage?.metadata?.let {
@@ -120,16 +119,20 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    private fun initializeChats(message: Message) {
+    private fun appendOrInitializeChats(message: Message) {
         _chatUiState.update { currentState ->
-            val currentChatResponse = currentState.chatResponse ?: message.initialChats?.let {
+            val currentChatResponse = currentState.chatResponse?.let {
+                it.copy(
+                    data = it.data + (message.initialChats ?: emptyList())
+                )
+            } ?: message.initialChats?.let {
                 ChatResponse(
                     success = true,
                     message = "Initialized",
                     data = it
                 )
             }
-            currentState.copy(chatResponse = currentChatResponse?.copy())
+            currentState.copy(chatResponse = currentChatResponse)
         }
     }
 
