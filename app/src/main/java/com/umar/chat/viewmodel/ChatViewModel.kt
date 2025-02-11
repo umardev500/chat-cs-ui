@@ -49,7 +49,15 @@ class ChatViewModel @Inject constructor(
         listentToWebsocketEvents()
     }
 
-    fun listentToWebsocketEvents() {
+    // Reset all state and refetch on refresh
+    fun handleRefresh() {
+        _chatUpdate.update { null }
+        _statusUpdate.update { emptyList() }
+        fetchChat()
+        listentToWebsocketEvents()
+    }
+
+    private fun listentToWebsocketEvents() {
         viewModelScope.launch {
             websocketRepository.listenWebsocketEvents()
                 .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
@@ -153,7 +161,7 @@ class ChatViewModel @Inject constructor(
     }
 
     // fetchChat is function to fetch chat data
-    fun fetchChat() {
+    private fun fetchChat() {
         viewModelScope.launch {
             _chatUiState.update { it.copy(isLoading = true) }
             delay(100)

@@ -27,8 +27,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
 
     // Function to refresh chat data
     fun handleRefresh() {
-        chatViewModel.fetchChat()
-        chatViewModel.listentToWebsocketEvents()
+        chatViewModel.handleRefresh()
     }
 
     // Function to handle navigation to messaging screen
