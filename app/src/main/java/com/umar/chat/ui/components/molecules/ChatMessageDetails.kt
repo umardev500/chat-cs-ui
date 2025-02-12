@@ -37,6 +37,7 @@ fun ChatMessageDetails(lastMessage: LastMessage, count: Int, isTyping: Boolean =
         } else {
             Text(
                 text = lastMessage.conversation,
+                fontWeight = if (isUnread) FontWeight.Medium else FontWeight.Normal,
                 color = if (isUnread) Gray800 else Gray600,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
