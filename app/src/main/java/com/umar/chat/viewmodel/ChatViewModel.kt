@@ -59,6 +59,7 @@ class ChatViewModel @Inject constructor(
             websocketRepository.listenWebsocketEvents()
                 .catch { e -> Log.e("ChatScreen", "Flow error: ${e.message}", e) }
                 .collect { ev ->
+                    Log.d("ChatLog", "event $ev")
                     val rawResponse = WsEventUtils.parseRawWsResponse(ev) ?: return@collect
 
                     val data: WsEventResult =

@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.umar.chat.navigation.LocalNavigationActions
 import com.umar.chat.navigation.NavigationActions
+import com.umar.chat.ui.components.organisms.ChatHeader
 import com.umar.chat.ui.components.organisms.ChatList
 import com.umar.chat.viewmodel.ChatViewModel
 
@@ -34,7 +35,11 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
         navigationActions.navigateToMessaging(jid)
     }
 
-    Scaffold { innerPadding ->
+    Scaffold (
+        topBar = {
+            ChatHeader()
+        }
+    ) { innerPadding ->
         Box(
             modifier = Modifier.padding(innerPadding),
             contentAlignment = Alignment.Center
