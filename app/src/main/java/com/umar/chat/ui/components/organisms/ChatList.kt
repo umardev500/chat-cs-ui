@@ -39,7 +39,12 @@ fun ChatList(
         updatedChats = updatedChats.map { chat ->
             if (chat.remotejid == chatUpdate.textMessage?.metadata?.remotejid) {
                 chat.copy(
-                    lastMessage = chatUpdate.textMessage.let { chat.lastMessage?.copy(conversation = it.conversation) }
+                    lastMessage = chatUpdate.textMessage.let {
+                        chat.lastMessage?.copy(
+                            conversation = it.conversation,
+                            timestamp = it.timestamp
+                        )
+                    }
                 )
             } else {
                 chat
