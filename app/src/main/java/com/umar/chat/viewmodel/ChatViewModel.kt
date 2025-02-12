@@ -123,7 +123,7 @@ class ChatViewModel @Inject constructor(
         _chatUiState.update { currentState ->
             val currentChatResponse = currentState.chatResponse?.let {
                 it.copy(
-                    data = it.data + (message.initialChats ?: emptyList())
+                    data = (message.initialChats ?: emptyList()) + it.data
                 )
             } ?: message.initialChats?.let {
                 ChatResponse(
