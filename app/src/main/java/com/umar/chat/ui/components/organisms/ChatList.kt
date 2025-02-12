@@ -26,7 +26,7 @@ fun ChatList(
     statusUpdate: List<Status>,
     typingUpdate: List<Typing>,
     chatUpdate: Message?,
-    fetchProfilePic: suspend (jid: String) -> CommonModel
+    getProfilePic: suspend (jid: String) -> String?
 ) {
     // Merge `statusUpdate` into `chats`
     var updatedChats = chats.map { chat ->
@@ -83,7 +83,7 @@ fun ChatList(
 
             items(updatedChats.size, key = { it }) { index ->
                 val chat = updatedChats[index]
-                ChatItem(chat = chat, navigate = onNavigate, fetchProfilePic = fetchProfilePic)
+                ChatItem(chat = chat, navigate = onNavigate, getProfilePic = getProfilePic)
             }
 
         }

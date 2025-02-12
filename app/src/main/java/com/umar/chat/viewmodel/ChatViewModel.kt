@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 
 data class ChatUiState(
@@ -44,6 +46,8 @@ class ChatViewModel @Inject constructor(
     private val _chatUpdate = MutableStateFlow<Message?>(null)
     val chatUpdate: StateFlow<Message?> = _chatUpdate
 
+    private val profilePicCache = mutableMapOf<String, String?>()
+
     init {
         fetchChat()
         listentToWebsocketEvents()
@@ -53,6 +57,12 @@ class ChatViewModel @Inject constructor(
     fun handleRefresh() {
         fetchChat()
         listentToWebsocketEvents()
+    }
+
+    suspend fun getProfilePic(jid: String): String? {
+        return profilePicCache.getOrPut(jid) {
+            chatRepository.fetchProfilePic(jid).data?.jsonPrimitive?.contentOrNull
+        }
     }
 
     suspend fun fetchProfilePic(jid: String): CommonModel {

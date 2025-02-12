@@ -25,15 +25,14 @@ import kotlinx.serialization.json.jsonPrimitive
 fun ChatItem(
     chat: ChatData,
     navigate: (jid: String) -> Unit,
-    fetchProfilePic: suspend (jid: String) -> CommonModel
+    getProfilePic: suspend (jid: String) -> String?
 ) {
     var profilePicUrl by remember { mutableStateOf<String?>(null) }
 
     val isUnread = chat.unreadCount > 0
 
     LaunchedEffect(chat.remotejid) {
-        val result = fetchProfilePic(chat.remotejid)
-        val pic = result.data?.jsonPrimitive?.contentOrNull
+        val pic = getProfilePic(chat.remotejid)
         if (pic != null) {
             profilePicUrl = pic
         }

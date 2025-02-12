@@ -35,7 +35,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
         navigationActions.navigateToMessaging(jid)
     }
 
-    Scaffold (
+    Scaffold(
         topBar = {
             ChatHeader()
         }
@@ -52,7 +52,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
                 statusUpdate = statusUpdate,
                 typingUpdate = typingUpdate,
                 chatUpdate = chatUpdate,
-                fetchProfilePic = chatViewModel::fetchProfilePic
+                getProfilePic = chatViewModel::getProfilePic
             )
         }
     }
