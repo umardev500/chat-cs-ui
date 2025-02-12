@@ -1,5 +1,7 @@
 package com.umar.chat.data.network
 
+import android.util.Log
+import com.umar.chat.BuildConfig
 import com.umar.chat.data.model.ChatResponse
 import com.umar.chat.data.model.CommonModel
 import io.ktor.client.HttpClient
@@ -9,13 +11,12 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.statement.bodyAsText
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
 class ChatApiService {
-    private val host = "192.168.205.44"
-    private val port = 8000
+    private val host = BuildConfig.API_HOST
+    private val port = BuildConfig.API_PORT
     private val baseUrl = "http://$host:$port/api"
 
     private val client = HttpClient(Android) {

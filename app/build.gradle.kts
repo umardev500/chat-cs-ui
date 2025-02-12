@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.cxx.configure.gradleLocalProperties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,9 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
+
+val apiHost: String = gradleLocalProperties(rootDir, providers).getProperty("API_HOST")
+val apiPort: String = gradleLocalProperties(rootDir, providers).getProperty("API_PORT")
 
 android {
     namespace = "com.umar.chat"
@@ -19,6 +24,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API_HOST", apiHost)
+        buildConfigField("int", "API_PORT", apiPort)
     }
 
     buildTypes {
@@ -39,6 +47,8 @@ android {
     }
     buildFeatures {
         compose = true
+        resValues = true
+        buildConfig = true
     }
 }
 

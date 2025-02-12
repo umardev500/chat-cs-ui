@@ -1,6 +1,7 @@
 package com.umar.chat.data.network
 
 import android.util.Log
+import com.umar.chat.BuildConfig
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.websocket.WebSockets
@@ -14,8 +15,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 
 class WebsocketService {
-    private val _host = "192.168.205.44"
-    private val _port = 8000
+    private val _host = BuildConfig.API_HOST
+    private val _port = BuildConfig.API_PORT
 
     private val _client = HttpClient(CIO) {
         install(WebSockets)
