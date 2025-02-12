@@ -52,7 +52,6 @@ class ChatViewModel @Inject constructor(
     fun handleRefresh() {
         fetchChat()
         listentToWebsocketEvents()
-        _statusUpdate.update { emptyList() }
     }
 
     private fun listentToWebsocketEvents() {
