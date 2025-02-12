@@ -50,10 +50,9 @@ class ChatViewModel @Inject constructor(
 
     // Reset all state and refetch on refresh
     fun handleRefresh() {
-        _chatUpdate.update { null }
-        _statusUpdate.update { emptyList() }
         fetchChat()
         listentToWebsocketEvents()
+        _statusUpdate.update { emptyList() }
     }
 
     private fun listentToWebsocketEvents() {
@@ -175,6 +174,8 @@ class ChatViewModel @Inject constructor(
             } catch (e: Exception) {
                 Log.d("ChatScreen", "Failed to fetch chats: ${e.localizedMessage}")
                 _chatUiState.update { it.copy(isLoading = false) } // ✅ Ensure loading state is reset
+            } finally {
+                _chatUpdate.update { null }
             }
         }
     }
