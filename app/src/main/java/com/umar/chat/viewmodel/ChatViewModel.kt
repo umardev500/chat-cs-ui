@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.umar.chat.data.model.ChatResponse
+import com.umar.chat.data.model.CommonModel
 import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.MessageType
 import com.umar.chat.data.model.Status
@@ -52,6 +53,10 @@ class ChatViewModel @Inject constructor(
     fun handleRefresh() {
         fetchChat()
         listentToWebsocketEvents()
+    }
+
+    suspend fun fetchProfilePic(jid: String): CommonModel {
+        return chatRepository.fetchProfilePic(jid = jid)
     }
 
     private fun listentToWebsocketEvents() {

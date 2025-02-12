@@ -52,6 +52,7 @@ fun ChatScreen(chatViewModel: ChatViewModel = hiltViewModel()) {
                 statusUpdate = statusUpdate,
                 typingUpdate = typingUpdate,
                 chatUpdate = chatUpdate,
+                fetchProfilePic = chatViewModel::fetchProfilePic
             )
         }
     }

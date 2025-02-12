@@ -8,6 +8,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.umar.chat.data.model.ChatData
+import com.umar.chat.data.model.CommonModel
 import com.umar.chat.data.model.Message
 import com.umar.chat.data.model.PresenseType
 import com.umar.chat.data.model.Status
@@ -25,6 +26,7 @@ fun ChatList(
     statusUpdate: List<Status>,
     typingUpdate: List<Typing>,
     chatUpdate: Message?,
+    fetchProfilePic: suspend (jid: String) -> CommonModel
 ) {
     // Merge `statusUpdate` into `chats`
     var updatedChats = chats.map { chat ->
@@ -81,7 +83,7 @@ fun ChatList(
 
             items(updatedChats.size, key = { it }) { index ->
                 val chat = updatedChats[index]
-                ChatItem(chat = chat, navigate = onNavigate)
+                ChatItem(chat = chat, navigate = onNavigate, fetchProfilePic = fetchProfilePic)
             }
 
         }

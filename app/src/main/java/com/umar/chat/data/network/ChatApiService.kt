@@ -35,6 +35,16 @@ class ChatApiService {
         }
     }
 
+    suspend fun fetchProfilePic(jid: String): CommonModel {
+        val url = "$baseUrl/chat/picture/$jid"
+        return try {
+            val response: HttpResponse = client.get(url) // Send get data
+            response.body<CommonModel>()
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to fetch pic: ${e.localizedMessage}")
+        }
+    }
+
     suspend fun fetchChats(): ChatResponse {
         val url = "$baseUrl/chat"
         return try {

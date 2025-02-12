@@ -7,17 +7,37 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.umar.chat.R
 import com.umar.chat.data.model.ChatData
+import com.umar.chat.data.model.CommonModel
 import com.umar.chat.ui.components.atoms.Avatar
 import com.umar.chat.utils.formatEpochTime
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 
 @Composable
-fun ChatItem(chat: ChatData, navigate: (jid: String) -> Unit) {
+fun ChatItem(
+    chat: ChatData,
+    navigate: (jid: String) -> Unit,
+    fetchProfilePic: suspend (jid: String) -> CommonModel
+) {
+    var profilePicUrl by remember { mutableStateOf<String?>(null) }
+
     val isUnread = chat.unreadCount > 0
+
+    LaunchedEffect(chat.remotejid) {
+        val result = fetchProfilePic(chat.remotejid)
+        val pic = result.data?.jsonPrimitive?.contentOrNull
+        if (pic != null) {
+            profilePicUrl = pic
+        }
+    }
 
     Row(
         modifier = Modifier
@@ -26,7 +46,7 @@ fun ChatItem(chat: ChatData, navigate: (jid: String) -> Unit) {
             }
             .padding(horizontal = 16.dp, vertical = 16.dp)
     ) {
-        Avatar(painter = painterResource(R.drawable.avatar), isOnline = chat.isOnline)
+        Avatar(imageUrl = profilePicUrl, isOnline = chat.isOnline)
         Column(
             modifier = Modifier
                 .padding(start = 16.dp),
@@ -40,7 +60,11 @@ fun ChatItem(chat: ChatData, navigate: (jid: String) -> Unit) {
             )
 
             // Bottom
-            ChatMessageDetails(lastMessage = chat.lastMessage!!, count = chat.unreadCount, isTyping = chat.isTyping)
+            ChatMessageDetails(
+                lastMessage = chat.lastMessage!!,
+                count = chat.unreadCount,
+                isTyping = chat.isTyping
+            )
         }
 
     }

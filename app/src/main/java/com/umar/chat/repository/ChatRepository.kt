@@ -2,9 +2,14 @@ package com.umar.chat.repository
 
 import android.util.Log
 import com.umar.chat.data.model.ChatResponse
+import com.umar.chat.data.model.CommonModel
 import com.umar.chat.data.network.ChatApiService
 
 class ChatRepository(private val apiService: ChatApiService) {
+
+    suspend fun fetchProfilePic(jid: String): CommonModel {
+        return apiService.fetchProfilePic(jid = jid)
+    }
 
     // Fetch user data from the API
     suspend fun getChats(): ChatResponse {
