@@ -37,18 +37,22 @@ fun ChatList(
     // this handler for incoming message
     if (chatUpdate != null) {
         updatedChats = updatedChats.map { chat ->
-            if (chat.remotejid == chatUpdate.textMessage?.metadata?.remotejid) {
-                chat.copy(
-                    lastMessage = chatUpdate.textMessage.let {
-                        chat.lastMessage?.copy(
-                            conversation = it.conversation,
-                            timestamp = it.timestamp
-                        )
-                    }
-                )
-            } else {
-                chat
-            }
+            // TODO: should check for message type does its a text message or media etc.
+            // Text message checking
+            if (chatUpdate.textMessage != null) {
+                if (chat.remotejid == chatUpdate.textMessage.metadata.remotejid) {
+                    chat.copy(
+                        lastMessage = chatUpdate.textMessage.let {
+                            chat.lastMessage?.copy(
+                                conversation = it.conversation,
+                                timestamp = it.timestamp
+                            )
+                        }
+                    )
+                } else chat
+
+                // Do another check
+            } else chat
         }
     }
 
